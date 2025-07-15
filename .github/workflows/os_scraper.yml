@@ -29,4 +29,14 @@ jobs:
       - name: Commit and push CSV if it exists
         run: |
           git config user.name "github-actions"
-          git config user.email "github-actions@github.com
+          git config user.email "github-actions@github.com"
+          git fetch origin
+          git reset --hard origin/main
+          if [ -f latest_os_versions.csv ]; then
+            git add latest_os_versions.csv
+            git diff --quiet latest_os_versions.csv || git commit -m "Update CSV [auto]"
+            git push origin main
+          else
+            echo "⚠️ CSV file not found. Skipping commit."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
