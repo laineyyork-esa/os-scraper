@@ -26,17 +26,40 @@ jobs:
       - name: Run Python script
         run: python os_scraper.py
 
-      - name: Commit and push CSV if it exists
+      - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
+
+      - name: Fetch and reset to origin/main
+        run: |
           git fetch origin
           git reset --hard origin/main
+
+      - name: Check if CSV exists
+        id: check_csv
+        run: |
           if [ -f latest_os_versions.csv ]; then
-            git add latest_os_versions.csv
-            git diff --quiet latest_os_versions.csv || git commit -m "Update CSV [auto]"
-            git push origin main
+            echo "exists=true" >> $GITHUB_ENV
           else
-            echo "⚠️ CSV file not found. Skipping commit."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            echo "exists=false" >> $GITHUB_ENV
+
+      - name: Add CSV file
+        if: env.exists == 'true'
+        run: git add latest_os_versions.csv
+
+      - name: Commit CSV file if changed
+        if: env.exists == 'true'
+        run: |
+          git diff --quiet latest_os_versions.csv || git commit -m "Update CSV [auto]"
+
+      - name: Push changes
+        if: env.exists == 'true'
+        run: git push origin main
+
+      - name: CSV not found message
+        if: env.exists == 'false'
+        run: echo "⚠️ CSV file not found. Skipping commit."
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
