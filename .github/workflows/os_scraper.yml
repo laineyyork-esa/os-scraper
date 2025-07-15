@@ -26,6 +26,22 @@ jobs:
       - name: Run Python script
         run: python os_scraper.py
 
+        def compile_os_updates():
+    all_data = []
+    all_data.extend(scrape_apple_releases())
+    all_data.extend(fetch_chromebook_schedule())
+    all_data.extend(scrape_windows_releases())
+
+    df = pd.DataFrame(all_data)
+
+    # ✅ Fallback: Ensure CSV is created even if no data is scraped
+    if df.empty:
+        df = pd.DataFrame(columns=["Platform", "Release", "Date", "Checked_On"])
+
+    df["Checked_On"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    df.to_csv("latest_os_versions.csv", index=False)
+    print("✅ OS update data saved to latest_os_versions.csv")
+
       - name: Commit and push CSV
         run: |
           git config user.name "github-actions"
