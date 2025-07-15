@@ -2,7 +2,7 @@ name: Run OS Scraper Daily
 
 on:
   schedule:
-    - cron: "0 21 * * *"  # Every day at 9:00 PM UTC (7:00 AM AEST)
+    - cron: "0 21 * * *" # Every day at 9:00 PM UTC (7:00 AM AEST)
   workflow_dispatch:
 
 jobs:
@@ -27,17 +27,16 @@ jobs:
         run: python os_scraper.py
 
       - name: Commit and push CSV if it exists
-  run: |
-    git config user.name "github-actions"
-    git config user.email "github-actions@github.com"
-    git fetch origin
-    git reset --hard origin/main
-    if [ -f latest_os_versions.csv ]; then
-      git add latest_os_versions.csv
-      git diff --quiet latest_os_versions.csv || git commit -m "Update CSV [auto]"
-      git push origin main
-    else
-      echo "⚠️ CSV file not found. Skipping commit."
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch origin
+          git reset --hard origin/main
+          if [ -f latest_os_versions.csv ]; then
+            git add latest_os_versions.csv
+            git diff --quiet latest_os_versions.csv || git commit -m "Update CSV [auto]"
+            git push origin main
+          else
+            echo "⚠️ CSV file not found. Skipping commit."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
